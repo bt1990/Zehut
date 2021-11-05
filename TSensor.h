@@ -20,7 +20,7 @@ class Sensor{
 private:
 	string type;	//the type of sensor
 	string op;	//operation type, analog or digital
-	uint8_t num;	//sensor number (id)(arduino pin)
+	int num;	//sensor number (id)(arduino pin)
 	bool dPass; 	//status of digital sensor, true(1) = work/pass false(0) = failed
 	bool aPass[3];	//status of analog sensor, corresponding with the 3 ADC meaurements, true(1) = work/pass false(0) = failed
 	bool tested; 	//status of sensor tested, true(1) = tested false(0) = not tested
@@ -56,7 +56,7 @@ public:
 	//SETTERS
 	void setType(string type){this.type = type;}
 	void setOp(string op){this.op = op;}
-	void setNum(uint8_t num){this.num = num;}
+	void setNum(int num){this.num = num;}
 	void setDPass(bool dPass){this.dPass = dPass;}
 	void setAPass(bool aPass, int index){this.aPass[index] = aPass;}
 	void setTested(bool tested){this.tested = tested;}
@@ -65,7 +65,7 @@ public:
 	//GETTERS
 	string	getType(){return type;}
 	string getOp(){return op;}
-	uint8_t getNum(){return num;}
+	int getNum(){return num;}
 	bool getDPass(){return dPass;}
 	bool getAPass(int index){return this.aPass[index];}
 	bool getTested(){return tested;}
@@ -96,13 +96,14 @@ class SensorTestRun{
 public:
 	SensorTestReport * runDigitalSensorTest(Sensor * sensor){
 		SensorTestReport * report = new SensorTestReport();
+		SensorControl controller = SensorControl();
 		bool state;
 		
-		state = digitalReadSensor(sensor->getNumber());
+		state = controller.digitalReadSensor(sensor->getNumber());
 		
 		while(EVENT_TRIGGER); //variable must be changed to false to exit loop, (external trigger/interrupt)
 		
-		sensor->setDPass((state != digitalReadSensor(sensor))? true:false);
+		sensor->setDPass((state != controller.digitalReadSensor(sensor))? true:false);
 		sensor->setTested(true);
 		
 		EVENT_TRIGGER = true; //revert back to true awaiting the next event
@@ -113,10 +114,11 @@ public:
 
 	SensorTestReport * runAnalogSensorTest(Sensor * sensor){
 		SensorTestReport * report = new SensorTestReport();
+		SonsorControl controller = SensorControl();
 		int val;
 			
 		for(int i = 0; i < ANALOG_MAX_READ; i++ ){
-			val = analogReadSensor(sensor);
+			val = controller.analogReadSensor(sensor);
 			sensor->setAnalogValue(val,i);
 			
 			if(i == 0)sensor->setAPass((val==ASENSOR_TARGET1) ? true:false,i);
@@ -136,18 +138,19 @@ public:
 	
 	SensorTestReport * runDigitalSensorGroupTest(Sensor * sensors, int SIZE){
 		SensorTestReport * report = new SensorTestReport();
+		SensorControl controller = SensorControl();
 		bool state[SIZE];
 		
 		//collect all the state(output) of each sensors
 		for (int i = 0; i < SIZE; i++){
-			state[i] = digitalReadSensor(sensors[i]->getNumber());
+			state[i] = controller.digitalReadSensor(sensors[i]->getNumber());
 		} 
 		
 		while(EVENT_TRIGGER); //variable must be changed to false to exit loop, (external trigger/interrupt)
 		
 		//compare each sensor's current state to previous state 
 		for(int i = 0; i < SIZE; i++){
-			sensors[i]->setDPass((state[i] != digitalReadSensor(sensors[i]->getNumber()))? true:false);
+			sensors[i]->setDPass((state[i] != controller.digitalReadSensor(sensors[i]->getNumber()))? true:false);
 			sensors[i]->setTested(true);
 		}
 		
@@ -159,11 +162,12 @@ public:
 	
 	SensorTestReport * runAnalogSensorGroupTest(Sensor * sensor, int SIZE){
 		SensorTestReport * report  = new SensorTestReport();
+		SensorControl controller = SensorControl();
 		int val, i = 0, j = 0;
 		
 		for(j = 0; j < ANALOG_MAX_READ; j++){
 			for(i = 0; i < SIZE; i++){	
-				val = analogReadSensor(sensors[i]);
+				val = controller.analogReadSensor(sensors[i]);
 				sensors[i]->setAnalogValue(val,j);	
 				
 				if(j == 0)sensors[i]->setAPass((val == ASENSOR_TARGET1) ? true:false , j);
@@ -186,17 +190,29 @@ public:
 class SensorControl{
 private:
 	const string sensorTypes[] = {};
-	const string operationType[] = {"Analog","Digital"};
-	uint8_t numberOfSensors;
+	const string operationTypes[] = {"Analog","Digital"};
+	int numberOfSensors;
 	Sensor sensors[];
 
 public:
-	 Sensor * createSensor(string type, string op,uint8_t num){
+
+	SensorControl(){
+		
+					
+	}
+
+	~SensorControl(){
+		delete sensorTypes;
+		delete operationTypes;
+		delete sensors;
+	}
+
+	Sensor * createSensor(string type, string op,int num){
 		Sensor *temp = new Sensor(type,op,num);
 		return temp;
 	}
 	
-	Sensor * createSensorGroup(string type, string op, uint8_t num, uint8_t numberOfSensor){
+	Sensor * createSensorGroup(string type, string op, int num, int numberOfSensor){
 		Sensor sensors[numberOfSensor];
 		for(int i = 0; i < numberOfSensor; i++){
 			sensors[i](type,op,num);
