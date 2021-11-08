@@ -125,7 +125,6 @@ public:
 	* @param 'sensor' object whose test is being performed on 
 	* @return an object of 'SensorTestReport' class
 	*/
-
 	SensorTestReport * runAnalogSensorTest(Sensor * sensor){
 		SensorTestReport * report = new SensorTestReport();
 		SonsorControl controller = SensorControl();
@@ -157,7 +156,6 @@ public:
 	* @param 'SIZE' holds the number of objects to be tested
 	* @return an object of 'SensorTestReport' class
 	*/
-	
 	SensorTestReport * runDigitalSensorGroupTest(Sensor * sensors, int SIZE){
 		SensorTestReport * report = new SensorTestReport();
 		SensorControl controller = SensorControl();
@@ -189,7 +187,6 @@ public:
 	* @param 'SIZE' holds the number of objects to be tested  
 	* @return an object of 'SensorTestReport' class
 	*/
-	
 	SensorTestReport * runAnalogSensorGroupTest(Sensor * sensor, int SIZE){
 		SensorTestReport * report  = new SensorTestReport();
 		SensorControl controller = SensorControl();
@@ -227,7 +224,7 @@ private:
 public:
 
 	SensorControl(){
-		
+		numberOfSensors = 0;
 					
 	}
 
@@ -245,32 +242,37 @@ public:
 	
 	///Creates a group of new sensor objects with the same type and operation
 	Sensor * createSensorGroup(string type, string op, int [] num, int numberOfSensors){
-		Sensor sensors[numberOfSensors];
+		Sensor * sensors[numberOfSensors]; //declare pointer to array of sensor data type
+		
+		//using a loop to instantiate and the define the sensor object
 		for(int i = 0; i < numberOfSensors; i++){
-			sensors[i](type,op,num[i]);
+			sensors[i] = new Sensor(type,op,num[i]);
 		}
 		return sensors;
 	}
 
 	///Reads the input of the digital sensor signal
 	bool digitalReadSensor(Sensor * sensor){
-		//check the operation type is correct
+		//check the operational type is correct
 		if(sensor->getType() == "Digital"){
-			digitalRead(sensor->getNumber());
-			return true;
+			digitalRead(sensor->getNumber()); //uses the sensor's number(arduino pin) to read value
+			return true; //whether sensor output HIGH or LOW return true
 		}else{
-			//Serial.print("");
-			return false;
+			//Serial.println("System is attempting to perform a digital read on an analog type sensor. If perform result maybe inconclusive. ");
+			return false; //return false if the wrong operational type
 		}	
 		
 	}
 	
 	///Reads the input of the analog sensor signal
 	int analogReadSensor(Sensor * sensor){
+	
+		//check the operational type is correct
 		if(sensor->type == "Analog"){
-			return analogRead(sensor->getNumber());
-		}else{
-			return -1;
+			return analogRead(sensor->getNumber()); //return the analog value outputed by the sensor
+		}else{	
+			//Serial.println("System is attempting to perform a analog read on an digital type sensor. If perform result maybe inconclusive. ");
+			return -1; //otherwise return a negative value, which sensor's output typically don't return
 		}
 	}
 };
