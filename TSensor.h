@@ -94,6 +94,13 @@ public:
 
 class SensorTestRun{
 public:
+	
+	/**
+	* Run digital test procedure on 'sensor' object
+	* 
+	* @param 'sensor' object whose test is being performed on 
+	* @return an object of 'SensorTestReport' class
+	*/
 	SensorTestReport * runDigitalSensorTest(Sensor * sensor){
 		SensorTestReport * report = new SensorTestReport();
 		SensorControl controller = SensorControl();
@@ -111,6 +118,13 @@ public:
 		report->generateDSensorReport(sensor);
 		return report;		
 	}
+	
+	/**
+	* Run analog test procedure on 'sensor' object 
+	* 
+	* @param 'sensor' object whose test is being performed on 
+	* @return an object of 'SensorTestReport' class
+	*/
 
 	SensorTestReport * runAnalogSensorTest(Sensor * sensor){
 		SensorTestReport * report = new SensorTestReport();
@@ -136,6 +150,14 @@ public:
 		return report;
 	}
 	
+	/**
+	* Run digital test procedure on group of 'Sensor' object passed as the parameter
+	*
+	* @param 'sensor' array of objects whose test is being performed on 
+	* @param 'SIZE' holds the number of objects to be tested
+	* @return an object of 'SensorTestReport' class
+	*/
+	
 	SensorTestReport * runDigitalSensorGroupTest(Sensor * sensors, int SIZE){
 		SensorTestReport * report = new SensorTestReport();
 		SensorControl controller = SensorControl();
@@ -159,6 +181,14 @@ public:
 		report->generateDSensorGroupReport(sensors);
 		return report;
 	}
+	
+	/**
+	* Run analog test procedure on group of 'Sensor' object passed as the parameter
+	*
+	* @param 'sensor' array of objects whose test is being performed on
+	* @param 'SIZE' holds the number of objects to be tested  
+	* @return an object of 'SensorTestReport' class
+	*/
 	
 	SensorTestReport * runAnalogSensorGroupTest(Sensor * sensor, int SIZE){
 		SensorTestReport * report  = new SensorTestReport();
@@ -207,19 +237,22 @@ public:
 		delete sensors;
 	}
 
+	///Creates a new sensor object
 	Sensor * createSensor(string type, string op,int num){
 		Sensor *temp = new Sensor(type,op,num);
 		return temp;
 	}
 	
-	Sensor * createSensorGroup(string type, string op, int num, int numberOfSensor){
-		Sensor sensors[numberOfSensor];
-		for(int i = 0; i < numberOfSensor; i++){
-			sensors[i](type,op,num);
+	///Creates a group of new sensor objects with the same type and operation
+	Sensor * createSensorGroup(string type, string op, int [] num, int numberOfSensors){
+		Sensor sensors[numberOfSensors];
+		for(int i = 0; i < numberOfSensors; i++){
+			sensors[i](type,op,num[i]);
 		}
 		return sensors;
 	}
 
+	///Reads the input of the digital sensor signal
 	bool digitalReadSensor(Sensor * sensor){
 		//check the operation type is correct
 		if(sensor->getType() == "Digital"){
@@ -232,6 +265,7 @@ public:
 		
 	}
 	
+	///Reads the input of the analog sensor signal
 	int analogReadSensor(Sensor * sensor){
 		if(sensor->type == "Analog"){
 			return analogRead(sensor->getNumber());
