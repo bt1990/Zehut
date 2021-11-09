@@ -1,0 +1,81 @@
+This document is written by Charles W. Florestal 11/08/2021
+*** This document explains the algorithm behind the developing the testing code ***
+
+Sensors are considered electrical, opto-electrical, or electronic devices composed of 
+specialty electronics or sensitive materials, for determining if there is a presense 
+of particular entity or function. Detectors and Transducers are also considered sensors.
+Electrical inputs from sensors can be read through an analog or digital signal. There
+are a variety of sensors in the market, and they are as listed below:
+
+
+-Vision and Imaging
+-Temperature
+-Radiation
+-Proximity
+-Pressure
+-Position
+-Photoelectric
+-Particle
+-Motion
+-Metal
+-Level
+-Leak
+-Humidity 
+-Gas and Chemical 
+-Force
+-Flow
+-Flaw
+-Flame
+-Electrical
+-Contact 
+-Non-Contact
+
+
+
+So, when developing the code for testing the probable sensors, I only considered the basic
+functions such as HIGH and LOW for digital sensors, and a 10 bit (0-1023) resolution read
+from the Arduino's ADC for analog sensors. There are a variety of sensors and some can come 
+in built-in modules where they can output different signals such as PWM,I2C, SPI,etc. 
+Therefore, I compartmentalize the code in order to expand the code in the future if necessary. 
+ 
+
+[***********************************DIGITAL ALGORITHM***************************************]
+
+When considering the code for a basic digital output sensor I thought of the well-known PIR
+motion sensor. When a motion is detected it outputs a low signal on its signal pin. Now, to 
+test a device like this you simply need to capture and compare its different states 
+(HIGH and LOW). So as follow read and capture it current state, create motion event, read and 
+capture new state, then compare old and new state and it should be different.
+
+1) Create variable to capture digital signal, state
+2) Read sensor signal pin and store value in 'state' (without any event)
+3) Create event (motion, vibration, etc.)
+4) Read new signal of pin and compare to stored value in 'state'
+5) If both old and new signal values are the same, return false for sensor failed test
+6) otherside return true for passed test
+
+Steps 2 to 4 can be repeated several times to solidify sensor's test diagnosis. 
+
+
+
+[*************************************ANALOG ALGORITHM**************************************]
+
+When considering the code for a basic analog output sensor, I thought of a photo-resistor. The 
+increase of light exposure over the sensor will proportionally increase the resistance. Now as 
+mentioned before the Arduino's ADC has a 10-bit resolution giving a range of 0 to 1023 for an
+input signal ranging from 0-5v (or 0-3.3v). You would test this by capturing different readings 
+along that range corresponding to how much light is being exposed. I chose to capture no light, 
+seeking the value of zero, medium light exposure for any value within that range, and maximum
+light exposure for a targeted value of 1023. If the desired targets are reached it constitute as
+a pass in the procedure. 
+
+1) Create a variable to hold the read value 
+2) Create a loop to iterate through the number of values you are seeking (our case, 3)
+3) Read sensor signal and compare it to target '0', if equal it pass otherwise fail
+4) Create event (light exposure, medium )
+5) Read sensor signal, should be within the 10 bit resolution for a pass 
+6) Create event #2 (maximum light exposure)
+7) Read sensor signal and compare it to target '1023' if equal it otherwise fail
+
+
+
