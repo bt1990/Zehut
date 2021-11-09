@@ -127,7 +127,7 @@ public:
 	*/
 	SensorTestReport * runAnalogSensorTest(Sensor * sensor){
 		SensorTestReport * report = new SensorTestReport();
-		SonsorControl controller = SensorControl();
+		SensorControl controller = SensorControl();
 		int val;
 			
 		for(int i = 0; i < ANALOG_MAX_READ; i++ ){
