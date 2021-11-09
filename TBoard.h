@@ -52,8 +52,12 @@ public:
 		return board;
 	}
 
-	Board * createBoardGroup(){
-
+	Board * createBoardGroup(int ID[], string version,int numberOfBoards){
+		Board *board[numberOfBoards];
+		for(int i = 0; i < numberOfBoards; i++){
+			board[i] = new Board(ID[i],version);
+		}
+		return board;
 	}
 
 	void setBoardID(Board * board, int ID){
