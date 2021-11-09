@@ -216,10 +216,10 @@ public:
 
 class SensorControl{
 private:
-	const string sensorTypes[] = {};
+	const string sensorTypes[] = {"Vision & Image","Temperature","Radiation","Proximity","Pressure","Position","Photoelectric","Particle","Motion","Metal","Level","Leak",
+		"Humidity","Gas & Chemical","Force","Flow","Flaw","Flame","Electrical","Contact","Non-contact"};
 	const string operationTypes[] = {"Analog","Digital"};
 	int numberOfSensors;
-	Sensor sensors[];
 
 public:
 
