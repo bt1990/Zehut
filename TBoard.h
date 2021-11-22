@@ -59,6 +59,10 @@ public:
 		}
 		return board;
 	}
+	
+	Sensor * createSensors(){
+	
+	}
 
 	void setBoardID(Board * board, int ID){
 		board->setID(ID);

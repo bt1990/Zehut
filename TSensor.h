@@ -78,8 +78,29 @@ public:
 class SensorTestReport{
 private: 
 public:
-	string generateDSensorReport(Sensor * sensor);
-	string generateASensorRepot(Sensor * sensor);
+	/**
+	* Gathers information on digital tested sensor
+	*
+	* @param 'sensor' object whose test has been performed on
+	* @return string datatype contain the result of test
+	*/
+	string generateDSensorReport(Sensor * sensor){
+		string result = "";	//declare string variable
+		result += "Sensor ID: " + std::to_string(sensor->getNum()) + " Type: " + sensor->getType() + " Op.: " + sensor->getOp() + " Tested: " + sensor->getTested() + " Pass: " + sensor->getDPass() + "\n";
+		return result;
+		
+	}
+	
+	/**
+	* Gathers informmation on analog tested sensor
+	*
+	* @param 'sensor' object whose test has been performed on	
+	* @return string datatype contain the result of test
+	*/
+	string generateASensorRepot(Sensor * sensor){
+		string result = "";
+		
+	}
 	string generateDSensorGroupReport(Sensor * sensor);
 	string generateASensorGroupReport(Sensor * sensor);
 	
