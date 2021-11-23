@@ -75,13 +75,12 @@ public:
 };
 
 
-class SensorTestReport{
-private: 
+class SensorTestReport{ 
 public:
 	/**
 	* Gathers information on digital tested sensor
 	*
-	* @param 'sensor' object whose test has been performed on
+	* @param 'sensor' pointer to object whose test has been performed on
 	* @return string datatype contain the result of test
 	*/
 	string generateDSensorReport(Sensor * sensor){
@@ -94,17 +93,58 @@ public:
 	/**
 	* Gathers informmation on analog tested sensor
 	*
-	* @param 'sensor' object whose test has been performed on	
+	* @param 'sensor' pointer to object whose test has been performed on	
 	* @return string datatype contain the result of test
 	*/
 	string generateASensorRepot(Sensor * sensor){
 		string result = "";
+		result += "Sensor ID: " + std::to_string(sensor->getNum()) + " Type: " + sensor->getType() + " Op.: " + sensor->getOp() + " Tested: " + sensor->getTested();
+		result += " Target 1: " + std::to_string(ASENSOR_TARGET1) + " Measured 1: " + sensor->getAnalogValue(0) + " " + sensor->getAPass(0); 
+		result += " Target 2: " + std::to_string(ASENSOR_TARGET1) + " < Value < " + std::to_string(ASENSOR_TARGET2) + " Measured 2: " sensor->getAnalogValue(1) + " " + sensor->getAPass(1);
+		result += " Target 3: " + std::to_string(ASENSOR_TARGET2) + " Measured 3: " + sensor->getAnalogValue(2) + " " + sensor->getAPass(2) + "\n";
 		
+		return result;		
 	}
-	string generateDSensorGroupReport(Sensor * sensor);
-	string generateASensorGroupReport(Sensor * sensor);
+
+
+	/**
+	* Gathers information on the group of digital tested sensor
+	*
+	* @param 'sensor' pointer to object group  whose test has been performed on
+	* @return string datatype contain the result of test
+	*/
+	string generateDSensorGroupReport(Sensor * sensor, int SIZE){
+		string result = "";
+		result += "****** SET OF DIGITAL SENSORS TESTED ******";
+		
+		for(int i = 0; i < SIZE; i++){
+			result += generateDSensorReport(sensor);
+			sensor++;
+		}
+			
+		return result;
+	}
+
+
+	/**
+	* Gathers information on the group of analog tested sensor
+	*
+	* @param 'sensor' pointer to object group whose test has been performed on
+	* @return string datatype contain the result of test
+	*/
+	string generateASensorGroupReport(Sensor * sensor, int SIZE){
+		string result = "";
+		result += "****** SET OF DIGITAL SENSORS TESTED ******";
+		
+		for(int i = 0; i < SIZE; i++){
+			result += generateASensorReport(sensor);
+			sensor++;
+		}
+		
+		return result;
+	}
 	
-	string parseReportForCSV(); //spreadsheet report
+	//string parseReportForCSV(); //spreadsheet report
 };
 
 class SensorTestReportList{
