@@ -206,7 +206,7 @@ public:
 
 		EVENT_TRIGGER = true;	//revert back to true awaiting the next event
 
-		report->generateASensorReportsensor(sensor);
+		report->generateASensorReport(sensor);
 		return report;
 	}
 	
