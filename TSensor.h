@@ -4,8 +4,8 @@
 
 #include <iostream>
 #include <string>
-#include "wiring_digital.c"
-#include "wiring_analog.c"
+//#include "wiring_digital.c"
+//#include "wiring_analog.c"
 
 
 #define ANALOG_MAX_READ 3
@@ -33,47 +33,109 @@ public:
 		op = " ";
 		num = 0;
 		dPass = true;
-		aPass = [true,true,true];
+		aPass[0] = true;
+		aPass[1] = true;
+		aPass[2] = true;
+		analogValue[0] = 0;
+		analogValue[1] = 0;
+		analogValue[2] = 0;
 		tested = false;
-		analogValue = [0,0,0];
 	}
 	Sensor(string type, string op, uint8_t num){
-		this.type = type;
-		this.op = op;
-		this.num = num;
+		this->type = type;
+		this->op = op;
+		this->num = num;
 		dPass = true;
-		aPass = [true,true,true];
+		aPass[0] = true;
+		aPass[1] = true;
+		aPass[2] = true;
+		analogValue[0] = 0;
+		analogValue[1] = 0;
+		analogValue[2] = 0;
 		tested = false;
-		analogValue= [0,0,0];
-	}
-	~Sensor(){
-		delete type;
-		delete op;
-		delete aPass;
-		delete analogValue;
 	}
 	
 	//SETTERS
-	void setType(string type){this.type = type;}
-	void setOp(string op){this.op = op;}
-	void setNum(int num){this.num = num;}
-	void setDPass(bool dPass){this.dPass = dPass;}
-	void setAPass(bool aPass, int index){this.aPass[index] = aPass;}
-	void setTested(bool tested){this.tested = tested;}
-	void setAnalogValue(int val, int index){this.analogValue[index] = val;}	
+	void setType(string type){this->type = type;}
+	void setOp(string op){this->op = op;}
+	void setNum(int num){this->num = num;}
+	void setDPass(bool dPass){this->dPass = dPass;}
+	void setAPass(bool aPass, int index){this->aPass[index] = aPass;}
+	void setTested(bool tested){this->tested = tested;}
+	void setAnalogValue(int val, int index){this->analogValue[index] = val;}	
 
 	//GETTERS
 	string	getType(){return type;}
 	string getOp(){return op;}
 	int getNum(){return num;}
 	bool getDPass(){return dPass;}
-	bool getAPass(int index){return this.aPass[index];}
+	bool getAPass(int index){return this->aPass[index];}
 	bool getTested(){return tested;}
-	int getAnalogValue(int index){return this.analogValue[index];}
+	int getAnalogValue(int index){return this->analogValue[index];}
 	
 	
 };
 
+class SensorControl{
+private:
+	//const string sensorTypes[21] = {"Vision & Image","Temperature","Radiation","Proximity","Pressure","Position","Photoelectric","Particle","Motion","Metal","Level","Leak","Humidity","Gas & Chemical","Force","Flow","Flaw","Flame","Electrical","Contact","Non-contact"};
+	//const string operationTypes[2] = {"Analog","Digital"};
+	int numberOfSensors;
+
+public:
+
+	SensorControl(){
+		numberOfSensors = 0;
+					
+	}
+
+	///Creates a new sensor object
+	Sensor * createSensor(string type, string op,int num){
+		Sensor *temp = new Sensor(type,op,num);
+		return temp;
+	}
+	
+	///Creates a group of new sensor objects with the same type and operation
+	Sensor * createSensorGroup(string type, string op, int num[], int numberOfSensors){
+		Sensor * sensors[numberOfSensors]; //declare pointer to array of sensor data type
+		
+		//using a loop to instantiate and the define the sensor object
+		for(int i = 0; i < numberOfSensors; i++){
+			sensors[i] = new Sensor(type,op,num[i]);
+		}
+		return *sensors;
+	}
+	
+	//Temporary bypass undeclared functions error
+	bool digitalRead(int num){ return true;}
+	int analogRead(int num){return num;}
+	
+
+	///Reads the input of the digital sensor signal
+	bool digitalReadSensor(Sensor * sensor){
+		//check the operational type is correct
+		if(sensor->getType() == "Digital"){
+			digitalRead(sensor->getNum()); //uses the sensor's number(arduino pin) to read value
+			return true; //whether sensor output HIGH or LOW return true
+		}else{
+			//Serial.println("System is attempting to perform a digital read on an analog type sensor. If perform result maybe inconclusive. ");
+			return false; //return false if the wrong operational type
+		}	
+		
+	}
+	
+	///Reads the input of the analog sensor signal
+	int analogReadSensor(Sensor * sensor){
+	
+		//check the operational type is correct
+		if(sensor->getType() == "Analog"){
+			return analogRead(sensor->getNum()); //return the analog value outputed by the sensor
+		}else{	
+			//Serial.println("System is attempting to perform a analog read on an digital type sensor. If perform result maybe inconclusive. ");
+			return -1; //otherwise return a negative value, which sensor's output typically don't return
+		}
+	}
+};
 
 class SensorTestReport{ 
 public:
@@ -85,7 +147,7 @@ public:
 	*/
 	string generateDSensorReport(Sensor * sensor){
 		string result = "";	//declare string variable
-		result += "Sensor ID: " + std::to_string(sensor->getNum()) + " Type: " + sensor->getType() + " Op.: " + sensor->getOp() + " Tested: " + sensor->getTested() + " Pass: " + sensor->getDPass() + "\n";
+		result += "Sensor ID: " + std::to_string(sensor->getNum()) + " Type: " + sensor->getType() + " Op.: " + sensor->getOp() + " Tested: " + ((sensor->getTested())? "True":"False") + " Pass: " + ((sensor->getDPass())?"True":"False") + "\n";
 		return result;
 		
 	}
@@ -96,12 +158,12 @@ public:
 	* @param 'sensor' pointer to object whose test has been performed on	
 	* @return string datatype contain the result of test
 	*/
-	string generateASensorRepot(Sensor * sensor){
+	string generateASensorReport(Sensor * sensor){
 		string result = "";
-		result += "Sensor ID: " + std::to_string(sensor->getNum()) + " Type: " + sensor->getType() + " Op.: " + sensor->getOp() + " Tested: " + sensor->getTested();
-		result += " Target 1: " + std::to_string(ASENSOR_TARGET1) + " Measured 1: " + sensor->getAnalogValue(0) + " " + sensor->getAPass(0); 
-		result += " Target 2: " + std::to_string(ASENSOR_TARGET1) + " < Value < " + std::to_string(ASENSOR_TARGET2) + " Measured 2: " sensor->getAnalogValue(1) + " " + sensor->getAPass(1);
-		result += " Target 3: " + std::to_string(ASENSOR_TARGET2) + " Measured 3: " + sensor->getAnalogValue(2) + " " + sensor->getAPass(2) + "\n";
+		result += "Sensor ID: " + std::to_string(sensor->getNum()) + " Type: " + sensor->getType() + " Op.: " + sensor->getOp() + " Tested: " + ((sensor->getTested())?"True":"False");
+		result += " Target 1: " + std::to_string(ASENSOR_TARGET1) + " Measured 1: " + std::to_string(sensor->getAnalogValue(0)) + " " + ((sensor->getAPass(0))? "True":"False"); 
+		result += " Target 2: " + std::to_string(ASENSOR_TARGET1) + " < Value < " + std::to_string(ASENSOR_TARGET2) + " Measured 2: " + std::to_string(sensor->getAnalogValue(1)) + " " + ((sensor->getAPass(1))? "True":"False");
+		result += " Target 3: " + std::to_string(ASENSOR_TARGET2) + " Measured 3: " + std::to_string(sensor->getAnalogValue(2)) + " " + ((sensor->getAPass(2))? "True":"False") + "\n";
 		
 		return result;		
 	}
@@ -167,7 +229,7 @@ public:
 		SensorControl controller = SensorControl();
 		bool state;
 		
-		state = controller.digitalReadSensor(sensor->getNumber());
+		state = controller.digitalReadSensor(sensor);
 		
 		while(EVENT_TRIGGER); //variable must be changed to false to exit loop, (external trigger/interrupt)
 		
@@ -196,7 +258,7 @@ public:
 			sensor->setAnalogValue(val,i);
 			
 			if(i == 0)sensor->setAPass((val==ASENSOR_TARGET1) ? true:false,i);
-			if(i == 1 )sensor->setAPass((ASENSOR_TARGET1<val<ASENSOR_TARGET2) ? true:false,i);
+			if(i == 1 )sensor->setAPass(((ASENSOR_TARGET1<val<ASENSOR_TARGET2) ? true:false),i);
 			if(i == 2)sensor->setAPass((val==ASENSOR_TARGET2) ? true:false,i);
 
 			if(i != 2) while(EVENT_TRIGGER); //only occurs on after all values are collected, must be changed to false to exit loop (external trigger/interrupt)
@@ -206,7 +268,7 @@ public:
 
 		EVENT_TRIGGER = true;	//revert back to true awaiting the next event
 
-		report->generateASensorReportsensor(sensor);
+		report->generateASensorReport(sensor);
 		return report;
 	}
 	
@@ -224,20 +286,20 @@ public:
 		
 		//collect all the state(output) of each sensors
 		for (int i = 0; i < SIZE; i++){
-			state[i] = controller.digitalReadSensor(sensors[i]->getNumber());
+			state[i] = controller.digitalReadSensor(&sensors[i]);
 		} 
 		
 		while(EVENT_TRIGGER); //variable must be changed to false to exit loop, (external trigger/interrupt)
 		
 		//compare each sensor's current state to previous state 
 		for(int i = 0; i < SIZE; i++){
-			sensors[i]->setDPass((state[i] != controller.digitalReadSensor(sensors[i]->getNumber()))? true:false);
-			sensors[i]->setTested(true);
+			sensors[i].setDPass((state[i] != controller.digitalReadSensor(&sensors[i]))? true:false);
+			sensors[i].setTested(true);
 		}
 		
 		EVENT_TRIGGER = true; // revert back to true awaiting the next event
 		
-		report->generateDSensorGroupReport(sensors);
+		report->generateDSensorGroupReport(sensors,SIZE);
 		return report;
 	}
 	
@@ -248,94 +310,32 @@ public:
 	* @param 'SIZE' holds the number of objects to be tested  
 	* @return an object of 'SensorTestReport' class
 	*/
-	SensorTestReport * runAnalogSensorGroupTest(Sensor * sensor, int SIZE){
+	SensorTestReport * runAnalogSensorGroupTest(Sensor * sensors, int SIZE){
 		SensorTestReport * report  = new SensorTestReport();
 		SensorControl controller = SensorControl();
 		int val, i = 0, j = 0;
 		
 		for(j = 0; j < ANALOG_MAX_READ; j++){
 			for(i = 0; i < SIZE; i++){	
-				val = controller.analogReadSensor(sensors[i]);
-				sensors[i]->setAnalogValue(val,j);	
+				val = controller.analogReadSensor(&sensors[i]);
+				sensors[i].setAnalogValue(val,j);	
 				
-				if(j == 0)sensors[i]->setAPass((val == ASENSOR_TARGET1) ? true:false , j);
-				if(j == 1)sensors[i]->setAPass((ASENSOR_TARGET1 < val < ASENSOR_TARGET2) ? true:false , j);
-				if(j == 2)sensor[i]->setAPass((val == ASENSOR_TARGET2) ? true:false , j);
+				if(j == 0)sensors[i].setAPass((val == ASENSOR_TARGET1) ? true:false , j);
+				if(j == 1)sensors[i].setAPass((ASENSOR_TARGET1 < val < ASENSOR_TARGET2) ? true:false , j);
+				if(j == 2)sensors[i].setAPass((val == ASENSOR_TARGET2) ? true:false , j);
 				
-				if (j == 2) sensors[i]->setTested(true); //on the final run, change test state of each sensor		
+				if (j == 2) sensors[i].setTested(true); //on the final run, change test state of each sensor		
 			}
 			if(j != 2 ) while(EVENT_TRIGGER); //occurs after each sensor get their values except final set of values 
 		}
 		
 		EVENT_TRIGGER = true; //revert back to true awaiting the next event
 
-		report->generateASensorGroupReport(sensors);
+		report->generateASensorGroupReport(sensors,SIZE);
 		return report;
 		
 	}		
 };
 
-class SensorControl{
-private:
-	const string sensorTypes[] = {"Vision & Image","Temperature","Radiation","Proximity","Pressure","Position","Photoelectric","Particle","Motion","Metal","Level","Leak",
-		"Humidity","Gas & Chemical","Force","Flow","Flaw","Flame","Electrical","Contact","Non-contact"};
-	const string operationTypes[] = {"Analog","Digital"};
-	int numberOfSensors;
 
-public:
-
-	SensorControl(){
-		numberOfSensors = 0;
-					
-	}
-
-	~SensorControl(){
-		delete sensorTypes;
-		delete operationTypes;
-		delete sensors;
-	}
-
-	///Creates a new sensor object
-	Sensor * createSensor(string type, string op,int num){
-		Sensor *temp = new Sensor(type,op,num);
-		return temp;
-	}
-	
-	///Creates a group of new sensor objects with the same type and operation
-	Sensor * createSensorGroup(string type, string op, int [] num, int numberOfSensors){
-		Sensor * sensors[numberOfSensors]; //declare pointer to array of sensor data type
-		
-		//using a loop to instantiate and the define the sensor object
-		for(int i = 0; i < numberOfSensors; i++){
-			sensors[i] = new Sensor(type,op,num[i]);
-		}
-		return sensors;
-	}
-
-	///Reads the input of the digital sensor signal
-	bool digitalReadSensor(Sensor * sensor){
-		//check the operational type is correct
-		if(sensor->getType() == "Digital"){
-			digitalRead(sensor->getNumber()); //uses the sensor's number(arduino pin) to read value
-			return true; //whether sensor output HIGH or LOW return true
-		}else{
-			//Serial.println("System is attempting to perform a digital read on an analog type sensor. If perform result maybe inconclusive. ");
-			return false; //return false if the wrong operational type
-		}	
-		
-	}
-	
-	///Reads the input of the analog sensor signal
-	int analogReadSensor(Sensor * sensor){
-	
-		//check the operational type is correct
-		if(sensor->type == "Analog"){
-			return analogRead(sensor->getNumber()); //return the analog value outputed by the sensor
-		}else{	
-			//Serial.println("System is attempting to perform a analog read on an digital type sensor. If perform result maybe inconclusive. ");
-			return -1; //otherwise return a negative value, which sensor's output typically don't return
-		}
-	}
-};
-
-#endif _TSENSOR_H_
+#endif

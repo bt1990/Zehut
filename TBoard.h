@@ -57,12 +57,9 @@ public:
 		for(int i = 0; i < numberOfBoards; i++){
 			board[i] = new Board(ID[i],version);
 		}
-		return board;
+		return *board;
 	}
 	
-	Sensor * createSensors(){
-	
-	}
 
 	void setBoardID(Board * board, int ID){
 		board->setID(ID);
@@ -73,4 +70,4 @@ public:
 	}
 };
 
-#endif _TBOARD_H_
+#endif
